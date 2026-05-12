@@ -1,1 +1,4 @@
-export type DashboardReducerInit = { [key: string]: unknown };
+export type DashboardReducerInit = {
+  id: string;
+  [key: string]: unknown;
+};
