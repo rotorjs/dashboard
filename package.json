@@ -1,0 +1,70 @@
+{
+  "name": "@rotorjs/dashboards",
+  "version": "0.0.0",
+  "description": "Rotor",
+  "author": {
+    "name": "Aaron Burmeister"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rotorjs/dashboards.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rotorjs/dashboards/issues"
+  },
+  "homepage": "https://github.com/rotorjs/",
+  "type": "module",
+  "keywords": [
+    "state",
+    "dashboards"
+  ],
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/main.d.ts",
+        "default": "./dist/main.js"
+      }
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b ./tsconfig-build.json && vite build",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "npm run lint -- --fix",
+    "prettify": "prettier . --write",
+    "preview": "vite preview",
+    "postversion": "git commit -am$npm_package_version",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@jplorg/jpl": "^2.0.0",
+    "@rotorjs/core": "^0.2.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import-x": "^4.16.2",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.3",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.3",
+    "unplugin-dts": "^1.0.0",
+    "vite": "^8.0.12"
+  },
+  "peerDependencies": {
+    "@rotorjs/core": "^0.2.0"
+  }
+}
