@@ -1,4 +1,4 @@
-import { StateEngine } from '@rotorjs/core';
+import { StateEngine, type StateEventTarget } from '@rotorjs/core';
 import type { DashboardAction, VarDashboardAction } from './DashboardAction';
 import { dashboardVarInterest } from './DashboardInterest';
 import type { DashboardReducer } from './DashboardReducer';
@@ -8,6 +8,12 @@ import type { DashboardState } from './DashboardState';
 export type DashboardEngineInit = {
   vars?: { [name: string]: unknown };
 };
+
+export type DashboardEventTarget = StateEventTarget<
+  DashboardState,
+  DashboardReducerInit,
+  DashboardAction
+>;
 
 export class DashboardEngine extends StateEngine<
   DashboardState,
