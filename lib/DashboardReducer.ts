@@ -14,6 +14,6 @@ export abstract class DashboardReducer<
   Engine
 > {
   recover(_prevState: DashboardState, error: unknown): DashboardState {
-    return [{ type: 'Error', error } satisfies ErrorDashboardTile];
+    return [{ type: 'error', error } satisfies ErrorDashboardTile];
   }
 }
