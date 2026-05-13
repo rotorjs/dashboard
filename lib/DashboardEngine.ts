@@ -17,11 +17,6 @@ export type DashboardEventTarget = StateEventTarget<
   DashboardAction
 >;
 
-export type DashboardEngineInit = {
-  vars?: { [name: string]: DashboardVar };
-  facts?: { [name: string]: DashboardFact };
-};
-
 export type CreateDashboardReducerFunction<
   Engine extends DashboardEngine = DashboardEngine,
 > = {
@@ -38,18 +33,13 @@ export class DashboardEngine extends StateEngine<
   DashboardAction
 > {
   #createReducer;
-  #vars: { [name: string]: DashboardVar };
-  #facts: { [name: string]: DashboardFact };
+  #vars: { [name: string]: DashboardVar } = {};
+  #facts: { [name: string]: DashboardFact } = {};
 
-  constructor(
-    createReducer: CreateDashboardReducerFunction,
-    options?: DashboardEngineInit,
-  ) {
+  constructor(createReducer: CreateDashboardReducerFunction) {
     super();
 
     this.#createReducer = createReducer;
-    this.#vars = options?.vars ?? {};
-    this.#facts = options?.facts ?? {};
 
     const signal = this.signal;
 
