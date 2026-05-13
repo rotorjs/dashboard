@@ -1,3 +1,3 @@
-import type { DashboardTile } from './DashboardTile';
+import type { DashboardNode } from './DashboardNode';
 
-export type DashboardState = DashboardTile[];
+export type DashboardState = DashboardNode[];
