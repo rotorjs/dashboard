@@ -1,12 +1,17 @@
 import { StateEngine, type StateEventTarget } from '@rotorjs/core';
-import type { DashboardAction, VarDashboardAction } from './DashboardAction';
-import { dashboardVarInterest } from './DashboardInterest';
+import type {
+  DashboardAction,
+  FactDashboardAction,
+  VarDashboardAction,
+} from './DashboardAction';
 import type { DashboardReducer } from './DashboardReducer';
 import type { DashboardReducerInit } from './DashboardReducerInit';
 import type { DashboardState } from './DashboardState';
+import { dashboardFactInterest, dashboardVarInterest } from './interests';
 
 export type DashboardEngineInit = {
   vars?: { [name: string]: unknown };
+  facts?: { [name: string]: unknown };
 };
 
 export type DashboardEventTarget = StateEventTarget<
@@ -22,6 +27,7 @@ export class DashboardEngine extends StateEngine<
 > {
   #createReducer;
   #vars: { [name: string]: unknown };
+  #facts: { [name: string]: unknown };
 
   constructor(
     createReducer: (
@@ -35,6 +41,7 @@ export class DashboardEngine extends StateEngine<
 
     this.#createReducer = createReducer;
     this.#vars = options?.vars ?? {};
+    this.#facts = options?.facts ?? {};
 
     const signal = this.signal;
 
@@ -42,10 +49,17 @@ export class DashboardEngine extends StateEngine<
       'action',
       (event) => {
         switch (event.action.type) {
-          case 'vars': {
+          case 'var': {
             const action = event.action as VarDashboardAction;
             this.#vars[action.name] = action.value;
             this.dispatchInterest(dashboardVarInterest(action.name));
+            return;
+          }
+
+          case 'fact': {
+            const action = event.action as FactDashboardAction;
+            this.#facts[action.name] = action.value;
+            this.dispatchInterest(dashboardFactInterest(action.name));
             return;
           }
         }
