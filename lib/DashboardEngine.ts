@@ -1,4 +1,4 @@
-import { StateEngine, type StateEventTarget } from '@rotorjs/core';
+import { StateEngine, StateEventTarget } from '@rotorjs/core';
 import type {
   DashboardAction,
   FactDashboardAction,
@@ -11,11 +11,28 @@ import type { DashboardState } from './DashboardState';
 import type { DashboardVar } from './DashboardVar';
 import { dashboardFactInterest, dashboardVarInterest } from './interests';
 
-export type DashboardEventTarget = StateEventTarget<
+export class DashboardEventTarget extends StateEventTarget<
   DashboardState,
   DashboardReducerInit,
   DashboardAction
->;
+> {
+  dispatchVar(name: string, value: unknown, exposed?: boolean) {
+    this.dispatchAction({
+      type: 'var',
+      name,
+      value,
+      exposed,
+    } satisfies VarDashboardAction);
+  }
+
+  dispatchFact(name: string, value: unknown) {
+    this.dispatchAction({
+      type: 'fact',
+      name,
+      value,
+    } satisfies FactDashboardAction);
+  }
+}
 
 export type CreateDashboardReducerFunction<
   Engine extends DashboardEngine = DashboardEngine,
@@ -27,11 +44,10 @@ export type CreateDashboardReducerFunction<
   ): DashboardReducer<Engine>;
 }['bivarianceHack'];
 
-export class DashboardEngine extends StateEngine<
-  DashboardState,
-  DashboardReducerInit,
-  DashboardAction
-> {
+export class DashboardEngine
+  extends StateEngine<DashboardState, DashboardReducerInit, DashboardAction>
+  implements DashboardEventTarget
+{
   #createReducer;
   #vars: { [name: string]: DashboardVar } = {};
   #facts: { [name: string]: DashboardFact } = {};
@@ -72,12 +88,29 @@ export class DashboardEngine extends StateEngine<
     );
   }
 
+  dispatchVar(name: string, value: unknown, exposed?: boolean) {
+    this.dispatchAction({
+      type: 'var',
+      name,
+      value,
+      exposed,
+    } satisfies VarDashboardAction);
+  }
+
   hasVar(name: string): boolean {
     return Object.hasOwn(this.#vars, name);
   }
 
   getVar(name: string): DashboardVar | undefined {
     return this.#vars[name];
+  }
+
+  dispatchFact(name: string, value: unknown) {
+    this.dispatchAction({
+      type: 'fact',
+      name,
+      value,
+    } satisfies FactDashboardAction);
   }
 
   hasFact(name: string): boolean {
