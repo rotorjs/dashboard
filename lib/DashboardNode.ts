@@ -9,3 +9,7 @@ export type DashboardNode = {
   id?: string;
   [key: string]: unknown;
 };
+
+export type DashboardLayoutNode = DashboardNode;
+
+export type DashboardTileNode = DashboardNode;
