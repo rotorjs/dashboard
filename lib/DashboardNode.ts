@@ -1,3 +1,11 @@
-export type ErrorDashboardNode = { type: 'error'; error: unknown };
+export type ErrorDashboardNode = {
+  type: 'error';
+  id?: string;
+  error: unknown;
+};
 
-export type DashboardNode = { type: string; [key: string]: unknown };
+export type DashboardNode = {
+  type: string;
+  id?: string;
+  [key: string]: unknown;
+};
