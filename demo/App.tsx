@@ -1,15 +1,16 @@
+import type { DashboardEventTarget } from '@/DashboardEngine';
 import { wrapWorker } from '@rotorjs/core';
 import { useEffect } from 'react';
-import './App.css';
-import { type DemoStateEventTarget } from './DemoStateEngine';
 // eslint-disable-next-line import-x/default
 import Worker from './worker?worker';
+
+import './App.css';
 
 const controller = new AbortController();
 const signal = controller.signal;
 
 const worker = new Worker();
-const engine: DemoStateEventTarget = wrapWorker(worker, { signal });
+const engine: DashboardEventTarget = wrapWorker(worker, { signal });
 // const engine = new DemoStateEngine();
 
 engine.addEventListener('register-reducer', (event) => {
@@ -23,7 +24,7 @@ engine.addEventListener('remove-reducer', (event) => {
 engine.addEventListener('action', (event) => {
   console.log('main: action', event.action, event.emitter);
 
-  if (event.action === 'stop') controller.abort();
+  if (event.action.type === 'stop') controller.abort();
 });
 
 engine.addEventListener('interest', (event) => {
@@ -34,7 +35,7 @@ engine.addEventListener('state', (event) => {
   console.log('main: state', event.id, event.state, event.emitter);
 });
 
-(window as typeof window & { engine: DemoStateEventTarget }).engine = engine;
+(window as typeof window & { engine: DashboardEventTarget }).engine = engine;
 
 let nextId = 0;
 

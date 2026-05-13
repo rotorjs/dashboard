@@ -1,10 +1,10 @@
 import { attachWorker } from '@rotorjs/core';
-import { ExtendedDemoStateEngine } from './DemoStateEngine';
+import { ExtendedDemoDashboardEngine } from './DemoDashboardEngine';
 
 const controller = new AbortController();
 const signal = controller.signal;
 
-const engine = new ExtendedDemoStateEngine();
+const engine = new ExtendedDemoDashboardEngine();
 attachWorker(engine, self, { signal });
 
 engine.addEventListener('register-reducer', (event) => {
@@ -18,7 +18,7 @@ engine.addEventListener('remove-reducer', (event) => {
 engine.addEventListener('action', (event) => {
   console.log('worker: action', event.action, event.emitter);
 
-  if (event.action === 'stop') {
+  if (event.action.type === 'stop') {
     engine.stop();
     controller.abort();
   }

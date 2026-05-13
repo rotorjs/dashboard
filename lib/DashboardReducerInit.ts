@@ -1,4 +1,1 @@
-export type DashboardReducerInit = {
-  id: string;
-  [key: string]: unknown;
-};
+export type DashboardReducerInit = object;
