@@ -1,1 +1,1 @@
-export type DashboardVar = { value: unknown; exposed?: boolean };
+export type DashboardVar = { value: unknown; exposed: boolean };
