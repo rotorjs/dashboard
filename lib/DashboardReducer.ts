@@ -1,9 +1,10 @@
 import { StateReducer } from '@rotorjs/core';
+import { v7 as uuid } from 'uuid';
 import type { DashboardAction } from './DashboardAction';
 import type { DashboardEngine } from './DashboardEngine';
+import type { ErrorDashboardNode } from './DashboardNode';
 import type { DashboardReducerInit } from './DashboardReducerInit';
 import type { DashboardState } from './DashboardState';
-import type { ErrorDashboardNode } from './DashboardNode';
 
 export abstract class DashboardReducer<
   Engine extends DashboardEngine = DashboardEngine,
@@ -14,6 +15,6 @@ export abstract class DashboardReducer<
   Engine
 > {
   recover(_prevState: DashboardState, error: unknown): DashboardState {
-    return [{ type: 'error', error } satisfies ErrorDashboardNode];
+    return [{ type: 'error', id: uuid(), error } satisfies ErrorDashboardNode];
   }
 }
