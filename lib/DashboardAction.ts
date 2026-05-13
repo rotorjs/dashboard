@@ -1,15 +1,15 @@
-import type { DashboardFact } from './DashboardFact';
-import type { DashboardVar } from './DashboardVar';
-
 export type VarDashboardAction = {
   type: 'var';
   name: string;
-} & DashboardVar;
+  value: unknown;
+  exposed?: boolean;
+};
 
 export type FactDashboardAction = {
   type: 'fact';
   name: string;
-} & DashboardFact;
+  value: unknown;
+};
 
 export type NavigateDashboardAction = {
   type: 'navigate';

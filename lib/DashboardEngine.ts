@@ -71,7 +71,7 @@ export class DashboardEngine
           case 'var': {
             this.#vars[action.name] = {
               value: action.value,
-              exposed: action.exposed,
+              exposed: action.exposed ?? false,
             };
             this.dispatchInterest(dashboardVarInterest(action.name));
             return;
