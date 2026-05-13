@@ -4,23 +4,33 @@ import type {
   FactDashboardAction,
   VarDashboardAction,
 } from './DashboardAction';
+import type { DashboardFact } from './DashboardFact';
 import type { DashboardReducer } from './DashboardReducer';
 import type { DashboardReducerInit } from './DashboardReducerInit';
 import type { DashboardState } from './DashboardState';
-import { dashboardFactInterest, dashboardVarInterest } from './interests';
 import type { DashboardVar } from './DashboardVar';
-import type { DashboardFact } from './DashboardFact';
-
-export type DashboardEngineInit = {
-  vars?: { [name: string]: DashboardVar };
-  facts?: { [name: string]: DashboardFact };
-};
+import { dashboardFactInterest, dashboardVarInterest } from './interests';
 
 export type DashboardEventTarget = StateEventTarget<
   DashboardState,
   DashboardReducerInit,
   DashboardAction
 >;
+
+export type DashboardEngineInit = {
+  vars?: { [name: string]: DashboardVar };
+  facts?: { [name: string]: DashboardFact };
+};
+
+export type CreateDashboardReducerFunction<
+  Engine extends DashboardEngine = DashboardEngine,
+> = {
+  bivarianceHack(
+    engine: Engine,
+    init: DashboardReducerInit,
+    callback: (state: DashboardState) => void,
+  ): DashboardReducer<Engine>;
+}['bivarianceHack'];
 
 export class DashboardEngine extends StateEngine<
   DashboardState,
@@ -32,11 +42,7 @@ export class DashboardEngine extends StateEngine<
   #facts: { [name: string]: DashboardFact };
 
   constructor(
-    createReducer: (
-      engine: DashboardEngine,
-      init: DashboardReducerInit,
-      callback: (state: DashboardState) => void,
-    ) => DashboardReducer,
+    createReducer: CreateDashboardReducerFunction,
     options?: DashboardEngineInit,
   ) {
     super();
@@ -50,9 +56,13 @@ export class DashboardEngine extends StateEngine<
     this.addEventListener(
       'action',
       (event) => {
-        switch (event.action.type) {
+        const action = event.action as
+          | VarDashboardAction
+          | FactDashboardAction
+          | { type: never };
+
+        switch (action.type) {
           case 'var': {
-            const action = event.action as VarDashboardAction;
             this.#vars[action.name] = {
               value: action.value,
               exposed: action.exposed,
@@ -62,7 +72,6 @@ export class DashboardEngine extends StateEngine<
           }
 
           case 'fact': {
-            const action = event.action as FactDashboardAction;
             this.#facts[action.name] = { value: action.value };
             this.dispatchInterest(dashboardFactInterest(action.name));
             return;

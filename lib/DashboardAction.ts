@@ -17,13 +17,4 @@ export type NavigateDashboardAction = {
   replace?: boolean;
 };
 
-export type GenericDashboardAction = {
-  type: string;
-  [key: string]: unknown;
-};
-
-export type DashboardAction =
-  | VarDashboardAction
-  | FactDashboardAction
-  | NavigateDashboardAction
-  | GenericDashboardAction;
+export type DashboardAction = { type: string; [key: string]: unknown };
