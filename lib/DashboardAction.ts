@@ -5,6 +5,12 @@ export type VarDashboardAction = {
   exposed?: boolean;
 };
 
+export type FactDashboardAction = {
+  type: 'fact';
+  name: string;
+  value: unknown;
+};
+
 export type NavigateDashboardAction = {
   type: 'navigate';
   href: string;
@@ -18,5 +24,6 @@ export type GenericDashboardAction = {
 
 export type DashboardAction =
   | VarDashboardAction
+  | FactDashboardAction
   | NavigateDashboardAction
   | GenericDashboardAction;
