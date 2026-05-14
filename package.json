@@ -1,6 +1,6 @@
 {
   "name": "@rotorjs/dashboards",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "description": "Rotor",
   "author": {
     "name": "Aaron Burmeister"
@@ -63,7 +63,7 @@
     "vite": "^8.0.12"
   },
   "dependencies": {
-    "@rotorjs/core": "^0.5.1",
+    "@rotorjs/core": "^0.5.2",
     "uuid": "^14.0.0"
   }
 }
