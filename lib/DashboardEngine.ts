@@ -1,21 +1,62 @@
-import { StateEngine, StateEventTarget } from '@rotorjs/core';
+import { StateEngine } from '@rotorjs/state';
 import type {
   DashboardAction,
   FactDashboardAction,
   VarDashboardAction,
 } from './DashboardAction';
+import type { DashboardEventTarget } from './DashboardEventTarget';
 import type { DashboardFact } from './DashboardFact';
-import type { DashboardReducer } from './DashboardReducer';
-import type { DashboardReducerInit } from './DashboardReducerInit';
 import type { DashboardState } from './DashboardState';
+import type { DashboardStateDescriptor } from './DashboardStateDescriptor';
+import type { DashboardStateReducer } from './DashboardStateReducer';
+import type { DashboardStateReducerConfig } from './DashboardStateReducerConfig';
 import type { DashboardVar } from './DashboardVar';
 import { dashboardFactInterest, dashboardVarInterest } from './interests';
 
-export class DashboardEventTarget extends StateEventTarget<
-  DashboardState,
-  DashboardReducerInit,
-  DashboardAction
-> {
+export type DashboardStateReducerMap<
+  Engine extends DashboardEngine = DashboardEngine,
+> = { [type: string]: DashboardStateReducerConfig<Engine> };
+
+export class DashboardEngine
+  extends StateEngine<DashboardStateDescriptor, DashboardState, DashboardAction>
+  implements DashboardEventTarget
+{
+  #reducerInit;
+  #vars: { [name: string]: DashboardVar } = {};
+  #facts: { [name: string]: DashboardFact } = {};
+
+  constructor(reducerInit: DashboardStateReducerMap) {
+    super();
+
+    this.#reducerInit = reducerInit;
+  }
+
+  protected onAction(action: DashboardAction): void {
+    super.onAction(action);
+
+    const a = action as
+      | VarDashboardAction
+      | FactDashboardAction
+      | { type: never };
+
+    switch (a.type) {
+      case 'var': {
+        this.#vars[a.name] = {
+          value: a.value,
+          exposed: a.exposed ?? false,
+        };
+        this.dispatchInterest(dashboardVarInterest(a.name));
+        return;
+      }
+
+      case 'fact': {
+        this.#facts[a.name] = { value: a.value };
+        this.dispatchInterest(dashboardFactInterest(a.name));
+        return;
+      }
+    }
+  }
+
   dispatchVar(name: string, value: unknown, exposed?: boolean) {
     this.dispatchAction({
       type: 'var',
@@ -31,70 +72,6 @@ export class DashboardEventTarget extends StateEventTarget<
       name,
       value,
     } satisfies FactDashboardAction);
-  }
-}
-
-export type CreateDashboardReducerFunction<
-  Engine extends DashboardEngine = DashboardEngine,
-> = {
-  bivarianceHack(
-    engine: Engine,
-    init: DashboardReducerInit,
-    callback: (state: DashboardState) => void,
-  ): DashboardReducer<Engine>;
-}['bivarianceHack'];
-
-export class DashboardEngine
-  extends StateEngine<DashboardState, DashboardReducerInit, DashboardAction>
-  implements DashboardEventTarget
-{
-  #createReducer;
-  #vars: { [name: string]: DashboardVar } = {};
-  #facts: { [name: string]: DashboardFact } = {};
-
-  constructor(createReducer: CreateDashboardReducerFunction) {
-    super();
-
-    this.#createReducer = createReducer;
-
-    const signal = this.signal;
-
-    this.addEventListener(
-      'action',
-      (event) => {
-        const action = event.action as
-          | VarDashboardAction
-          | FactDashboardAction
-          | { type: never };
-
-        switch (action.type) {
-          case 'var': {
-            this.#vars[action.name] = {
-              value: action.value,
-              exposed: action.exposed ?? false,
-            };
-            this.dispatchInterest(dashboardVarInterest(action.name));
-            return;
-          }
-
-          case 'fact': {
-            this.#facts[action.name] = { value: action.value };
-            this.dispatchInterest(dashboardFactInterest(action.name));
-            return;
-          }
-        }
-      },
-      { signal },
-    );
-  }
-
-  dispatchVar(name: string, value: unknown, exposed?: boolean) {
-    this.dispatchAction({
-      type: 'var',
-      name,
-      value,
-      exposed,
-    } satisfies VarDashboardAction);
   }
 
   hasVar(name: string): boolean {
@@ -105,14 +82,6 @@ export class DashboardEngine
     return this.#vars[name];
   }
 
-  dispatchFact(name: string, value: unknown) {
-    this.dispatchAction({
-      type: 'fact',
-      name,
-      value,
-    } satisfies FactDashboardAction);
-  }
-
   hasFact(name: string): boolean {
     return Object.hasOwn(this.#facts, name);
   }
@@ -121,10 +90,21 @@ export class DashboardEngine
     return this.#facts[name];
   }
 
+  protected getReducerConfig(
+    descriptor: DashboardStateDescriptor,
+  ): DashboardStateReducerConfig {
+    if (!Object.hasOwn(this.#reducerInit, descriptor.type))
+      throw new Error(`Unknown reducer type "${descriptor.type}"`);
+    return this.#reducerInit[descriptor.type];
+  }
+
+  getReducerID(descriptor: DashboardStateDescriptor): string {
+    return `${encodeURIComponent(descriptor.type)}:${encodeURIComponent(this.getReducerConfig(descriptor).getReducerID(descriptor.params))}`;
+  }
+
   protected createReducer(
-    init: DashboardReducerInit,
-    callback: (state: DashboardState) => void,
-  ): DashboardReducer {
-    return this.#createReducer(this, init, callback);
+    descriptor: DashboardStateDescriptor,
+  ): DashboardStateReducer<DashboardEngine> {
+    return this.getReducerConfig(descriptor).createReducer(this, descriptor);
   }
 }
