@@ -1,27 +1,34 @@
-import { DashboardEngine } from '@/DashboardEngine';
-import { DashboardReducer } from '@/DashboardReducer';
-import type { DashboardState } from '@/DashboardState';
+import {
+  DashboardEngine,
+  DashboardStateReducer,
+  type DashboardState,
+} from '@/main';
+
+export type DemoDashboardStateDescriptor = {
+  type: 'state' | 'other state';
+};
 
 export type DemoAction = { type: 'demo action'; content: string };
 
-export type DemoDashboardReducerInit = { other: boolean };
-
-export class DemoDashboardReducer extends DashboardReducer<DemoDashboardEngine> {
+export class DemoDashboardReducer extends DashboardStateReducer<DemoDashboardEngine> {
   #other: boolean;
 
   constructor(
     engine: DemoDashboardEngine,
-    other: boolean,
-    callback: (state: DashboardState) => void,
+    descriptor: DemoDashboardStateDescriptor,
   ) {
-    super(engine, [{ type: 'demo state' }], callback, { debounce: 100 });
+    super(engine, descriptor);
 
-    this.#other = other;
+    this.#other = descriptor.type === 'other state';
+
+    this.setDebounce(100);
 
     this.update();
   }
 
-  async reduce(_prevState: DashboardState): Promise<DashboardState> {
+  async reduce(
+    _prevState: DashboardState | undefined,
+  ): Promise<DashboardState> {
     console.log('reduce');
 
     this.clearInterests();
@@ -41,36 +48,43 @@ export class DemoDashboardReducer extends DashboardReducer<DemoDashboardEngine> 
   }
 }
 
+const demoReducerConfig = {
+  getReducerID: () => '',
+  createReducer: (
+    engine: DemoDashboardEngine,
+    descriptor: DemoDashboardStateDescriptor,
+  ) => new DemoDashboardReducer(engine, descriptor),
+};
+
 export class DemoDashboardEngine extends DashboardEngine {
   constructor() {
     super(
-      (engine: DemoDashboardEngine, init, callback) =>
-        new DemoDashboardReducer(
-          engine,
-          (init as Partial<DemoDashboardReducerInit>).other ?? false,
-          callback,
-        ),
+      // any key returns demoReducerConfig
+      new Proxy(
+        {},
+        {
+          get: () => demoReducerConfig,
+          getOwnPropertyDescriptor: () => ({
+            configurable: true,
+            enumerable: true,
+          }),
+        },
+      ),
     );
+  }
 
-    const signal = this.signal;
+  protected onAction(action: DemoAction | { type: never }): void {
+    super.onAction(action);
 
-    this.addEventListener(
-      'action',
-      (event) => {
-        const action = event.action as DemoAction | { type: never };
+    switch (action.type) {
+      case 'demo action':
+        console.log('got demo action', action.content);
 
-        switch (action.type) {
-          case 'demo action':
-            console.log('got demo action', action.content);
-
-            setTimeout(() => {
-              this.dispatchInterest('demo interest');
-            }, 5000);
-            return;
-        }
-      },
-      { signal },
-    );
+        setTimeout(() => {
+          this.dispatchInterest('demo interest');
+        }, 5000);
+        return;
+    }
   }
 
   getState(other: boolean): DashboardState {
@@ -81,8 +95,10 @@ export class DemoDashboardEngine extends DashboardEngine {
 }
 
 export class ExtendedDemoDashboardEngine extends DemoDashboardEngine {
+  #n = 0;
+
   getState(other: boolean): DashboardState {
     if (other) return super.getState(other);
-    return [{ type: 'extended demo state' }];
+    return [{ type: `extended demo state ${this.#n++}` }];
   }
 }

@@ -1,3 +1,3 @@
-import type { DashboardNode } from './DashboardNode';
+import type { DashboardNode } from './nodes';
 
 export type DashboardState = DashboardNode[];
