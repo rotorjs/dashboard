@@ -1,4 +1,4 @@
-import { StateEngine, StateEventTarget } from '@rotorjs/core';
+import { StateEngine, StateEventTarget } from '@rotorjs/state';
 import type {
   DashboardAction,
   FactDashboardAction,

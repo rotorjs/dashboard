@@ -1,4 +1,4 @@
-import { attachWorker } from '@rotorjs/core';
+import { attachWorker } from '@rotorjs/state';
 import { ExtendedDemoDashboardEngine } from './DemoDashboardEngine';
 
 const controller = new AbortController();

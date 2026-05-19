@@ -1,6 +1,6 @@
 ---
 type: pipeline
-name: publish @rotorjs/dashboards
+name: publish @rotorjs/dashboard
 
 when:
   workerGroup:
@@ -8,7 +8,7 @@ when:
   trigger:
     include: [tag, action]
   action:
-    include: [packages:@rotorjs/dashboards:publish]
+    include: [packages:@rotorjs/dashboard:publish]
 
 steps:
   - name: publish

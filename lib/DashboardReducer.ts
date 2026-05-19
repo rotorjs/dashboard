@@ -1,4 +1,4 @@
-import { StateReducer } from '@rotorjs/core';
+import { StateReducer } from '@rotorjs/state';
 import { v7 as uuid } from 'uuid';
 import type { DashboardAction } from './DashboardAction';
 import type { DashboardEngine } from './DashboardEngine';

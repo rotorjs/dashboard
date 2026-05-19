@@ -1,5 +1,5 @@
 import type { DashboardEventTarget } from '@/DashboardEngine';
-import { wrapWorker } from '@rotorjs/core';
+import { wrapWorker } from '@rotorjs/state';
 import { useEffect } from 'react';
 // eslint-disable-next-line import-x/default
 import Worker from './worker?worker';
