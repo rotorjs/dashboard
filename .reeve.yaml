@@ -4,7 +4,7 @@ name: publish @rotorjs/dashboard
 
 when:
   workerGroup:
-    include: [soldier]
+    include: [soldier@midgar]
   trigger:
     include: [tag, action]
   action:
