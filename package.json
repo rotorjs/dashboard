@@ -63,7 +63,7 @@
     "vite": "^8.0.16"
   },
   "dependencies": {
-    "@rotorjs/state": "^0.6.0",
+    "@rotorjs/state": "^0.6.1",
     "fast-deep-equal": "^3.1.3",
     "uuid": "^14.0.0"
   }
