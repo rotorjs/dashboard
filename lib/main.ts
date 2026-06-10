@@ -8,5 +8,7 @@ export * from './DashboardStateDescriptor';
 export * from './DashboardStateReducer';
 export * from './DashboardStateReducerConfig';
 export * from './DashboardVar';
+export * from './facts';
 export * from './interests';
 export * from './nodes';
+export * from './NumberFormatter';
