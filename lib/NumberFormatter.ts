@@ -31,12 +31,14 @@ export class NumberFormatter {
 
     if (this.#init?.locale) return this.#init.locale;
 
-    const engineLocale =
-      this.#init?.reducer?.engine.getFact(dashboardLocaleFact)?.value;
     this.#init?.reducer?.addInterest(
       dashboardFactInterest(dashboardLocaleFact),
     );
-    return typeof engineLocale === 'string' ? engineLocale : undefined;
+    const localeFact =
+      this.#init?.reducer?.engine.getFact(dashboardLocaleFact)?.value;
+    return typeof localeFact === 'string' && localeFact
+      ? localeFact
+      : undefined;
   }
 
   getFormat(format?: NumberFormat): Intl.NumberFormat {
