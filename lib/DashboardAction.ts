@@ -17,4 +17,6 @@ export type NavigateDashboardAction = {
   replace?: boolean;
 };
 
+export type SyncDashboardAction = { type: 'sync' };
+
 export type DashboardAction = { type: string; [key: string]: unknown };

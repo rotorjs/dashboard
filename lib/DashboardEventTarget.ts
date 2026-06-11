@@ -2,6 +2,7 @@ import { StateEventTarget } from '@rotorjs/state';
 import type {
   DashboardAction,
   FactDashboardAction,
+  SyncDashboardAction,
   VarDashboardAction,
 } from './DashboardAction';
 import type { DashboardState } from './DashboardState';
@@ -12,7 +13,7 @@ export class DashboardEventTarget extends StateEventTarget<
   DashboardState,
   DashboardAction
 > {
-  dispatchVar(name: string, value: unknown, exposed?: boolean) {
+  dispatchVar(name: string, value: unknown, exposed?: boolean): void {
     this.dispatchAction({
       type: 'var',
       name,
@@ -21,11 +22,15 @@ export class DashboardEventTarget extends StateEventTarget<
     } satisfies VarDashboardAction);
   }
 
-  dispatchFact(name: string, value: unknown) {
+  dispatchFact(name: string, value: unknown): void {
     this.dispatchAction({
       type: 'fact',
       name,
       value,
     } satisfies FactDashboardAction);
+  }
+
+  sync(): void {
+    this.dispatchAction({ type: 'sync' } satisfies SyncDashboardAction);
   }
 }
