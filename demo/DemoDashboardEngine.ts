@@ -1,6 +1,7 @@
 import {
   DashboardEngine,
   DashboardStateReducer,
+  type DashboardEventTarget,
   type DashboardState,
 } from '@/main';
 
@@ -33,7 +34,7 @@ export class DemoDashboardReducer extends DashboardStateReducer<DemoDashboardEng
 
     this.clearInterests();
 
-    this.engine.dispatchAction({
+    this.target.dispatchAction({
       type: 'demo action',
       content: 'demo',
     } satisfies DemoAction);
@@ -57,8 +58,9 @@ const demoReducerConfig = {
 };
 
 export class DemoDashboardEngine extends DashboardEngine {
-  constructor() {
+  constructor(target: DashboardEventTarget) {
     super(
+      target,
       // any key returns demoReducerConfig
       new Proxy(
         {},
@@ -81,7 +83,7 @@ export class DemoDashboardEngine extends DashboardEngine {
         console.log('got demo action', action.content);
 
         setTimeout(() => {
-          this.dispatchInterest('demo interest');
+          this.target.dispatchInterest('demo interest');
         }, 5000);
         return;
     }

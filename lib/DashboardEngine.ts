@@ -1,9 +1,6 @@
 import { StateEngine } from '@rotorjs/state';
-import type {
-  DashboardAction,
-  FactDashboardAction,
-  VarDashboardAction,
-} from './DashboardAction';
+import type { DashboardAction } from './DashboardAction';
+import { DashboardEnvironment } from './DashboardEnvironment';
 import type { DashboardEventTarget } from './DashboardEventTarget';
 import type { DashboardFact } from './DashboardFact';
 import type { DashboardState } from './DashboardState';
@@ -17,77 +14,55 @@ export type DashboardStateReducerMap<
   Engine extends DashboardEngine = DashboardEngine,
 > = { [type: string]: DashboardStateReducerConfig<Engine> };
 
-export class DashboardEngine
-  extends StateEngine<DashboardStateDescriptor, DashboardState, DashboardAction>
-  implements DashboardEventTarget
-{
-  #reducerInit;
-  #vars: { [name: string]: DashboardVar } = {};
-  #facts: { [name: string]: DashboardFact } = {};
+export type DashboardEngineInit = {
+  vars?: { [name: string]: DashboardVar };
+  facts?: { [name: string]: DashboardFact };
+};
 
-  constructor(reducerInit: DashboardStateReducerMap) {
-    super();
+export class DashboardEngine extends StateEngine<
+  DashboardStateDescriptor,
+  DashboardState,
+  DashboardAction,
+  DashboardEventTarget
+> {
+  #reducerInit;
+  #environment;
+
+  constructor(
+    target: DashboardEventTarget,
+    reducerInit: DashboardStateReducerMap,
+    init?: DashboardEngineInit,
+  ) {
+    super(target);
 
     this.#reducerInit = reducerInit;
-  }
-
-  protected onAction(action: DashboardAction): void {
-    super.onAction(action);
-
-    const a = action as
-      | VarDashboardAction
-      | FactDashboardAction
-      | { type: never };
-
-    switch (a.type) {
-      case 'var': {
-        this.#vars[a.name] = {
-          value: a.value,
-          exposed: a.exposed ?? false,
-        };
-        this.dispatchInterest(dashboardVarInterest(a.name));
-        return;
-      }
-
-      case 'fact': {
-        this.#facts[a.name] = { value: a.value };
-        this.dispatchInterest(dashboardFactInterest(a.name));
-        return;
-      }
-    }
-  }
-
-  dispatchVar(name: string, value: unknown, exposed?: boolean) {
-    this.dispatchAction({
-      type: 'var',
-      name,
-      value,
-      exposed,
-    } satisfies VarDashboardAction);
-  }
-
-  dispatchFact(name: string, value: unknown) {
-    this.dispatchAction({
-      type: 'fact',
-      name,
-      value,
-    } satisfies FactDashboardAction);
+    this.#environment = new DashboardEnvironment(this.target, {
+      vars: init?.vars,
+      facts: init?.facts,
+      onVar: (name) => {
+        this.target.dispatchInterest(dashboardVarInterest(name));
+      },
+      onFact: (name) => {
+        this.target.dispatchInterest(dashboardFactInterest(name));
+      },
+      signal: this.signal,
+    });
   }
 
   hasVar(name: string): boolean {
-    return Object.hasOwn(this.#vars, name);
+    return this.#environment.hasVar(name);
   }
 
   getVar(name: string): DashboardVar | undefined {
-    return this.#vars[name];
+    return this.#environment.getVar(name);
   }
 
   hasFact(name: string): boolean {
-    return Object.hasOwn(this.#facts, name);
+    return this.#environment.hasFact(name);
   }
 
   getFact(name: string): DashboardFact | undefined {
-    return this.#facts[name];
+    return this.#environment.getFact(name);
   }
 
   protected getReducerConfig(
