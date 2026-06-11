@@ -1,5 +1,6 @@
 export * from './DashboardAction';
 export * from './DashboardEngine';
+export * from './DashboardEnvironment';
 export * from './DashboardEventTarget';
 export * from './DashboardFact';
 export * from './DashboardState';
