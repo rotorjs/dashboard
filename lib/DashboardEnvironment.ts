@@ -1,4 +1,4 @@
-import { ActionEvent } from '@rotorjs/state';
+import { ActionEvent, TypedEventTarget } from '@rotorjs/state';
 import deepEquals from 'fast-deep-equal';
 import { v7 as uuid } from 'uuid';
 import type {
@@ -13,20 +13,21 @@ import type { DashboardVar } from './DashboardVar';
 export type DashboardEnvironmentInit = {
   vars?: { [name: string]: DashboardVar };
   facts?: { [name: string]: DashboardFact };
-  onVar?: (name: string, value: DashboardVar | undefined) => void;
-  onFact?: (name: string, value: DashboardFact | undefined) => void;
-  signal?: AbortSignal;
 };
 
-export class DashboardEnvironment {
+export class DashboardEnvironment extends TypedEventTarget<{
+  var: VarEvent;
+  fact: FactEvent;
+}> {
   #target;
   #id = uuid();
   #vars: { [name: string]: DashboardVar };
   #facts: { [name: string]: DashboardFact };
-  #signal;
   #controller = new AbortController();
 
   constructor(target: DashboardEventTarget, init?: DashboardEnvironmentInit) {
+    super();
+
     this.#target = target;
     this.#vars = Object.fromEntries(
       Object.entries(init?.vars ?? {}).map(([name, value]) => [
@@ -40,7 +41,6 @@ export class DashboardEnvironment {
         Object.freeze(value),
       ]),
     );
-    this.#signal = init?.signal;
 
     const signal = this.signal;
 
@@ -64,7 +64,9 @@ export class DashboardEnvironment {
             });
             if (!deepEquals(prevValue, nextValue)) {
               this.#vars[action.name] = nextValue;
-              init?.onVar?.(action.name, nextValue);
+              this.dispatchEvent(
+                new VarEvent(action.name, nextValue.value, nextValue.exposed),
+              );
             }
             return;
           }
@@ -74,7 +76,7 @@ export class DashboardEnvironment {
             const nextValue = Object.freeze({ value: action.value });
             if (!deepEquals(prevValue, nextValue)) {
               this.#facts[action.name] = nextValue;
-              init?.onFact?.(action.name, nextValue);
+              this.dispatchEvent(new FactEvent(action.name, nextValue.value));
             }
             return;
           }
@@ -117,8 +119,6 @@ export class DashboardEnvironment {
   }
 
   get signal(): AbortSignal {
-    if (this.#signal)
-      return AbortSignal.any([this.#controller.signal, this.#signal]);
     return this.#controller.signal;
   }
 
@@ -148,5 +148,51 @@ export class DashboardEnvironment {
 
   stop(): void {
     this.#controller.abort();
+  }
+}
+
+export class VarEvent extends Event {
+  #name;
+  #value;
+  #exposed;
+
+  constructor(name: string, value: unknown, exposed: boolean) {
+    super('var');
+
+    this.#name = name;
+    this.#value = value;
+    this.#exposed = exposed;
+  }
+
+  get name() {
+    return this.#name;
+  }
+
+  get value() {
+    return this.#value;
+  }
+
+  get exposed() {
+    return this.#exposed;
+  }
+}
+
+export class FactEvent extends Event {
+  #name;
+  #value;
+
+  constructor(name: string, value: unknown) {
+    super('fact');
+
+    this.#name = name;
+    this.#value = value;
+  }
+
+  get name() {
+    return this.#name;
+  }
+
+  get value() {
+    return this.#value;
   }
 }
