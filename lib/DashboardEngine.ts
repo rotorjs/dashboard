@@ -39,13 +39,28 @@ export class DashboardEngine extends StateEngine<
     this.#environment = new DashboardEnvironment(this.target, {
       vars: init?.vars,
       facts: init?.facts,
-      onVar: (name) => {
-        this.target.dispatchInterest(dashboardVarInterest(name));
+    });
+
+    const signal = this.signal;
+
+    this.#environment.addEventListener(
+      'var',
+      (event) => {
+        this.target.dispatchInterest(dashboardVarInterest(event.name));
       },
-      onFact: (name) => {
-        this.target.dispatchInterest(dashboardFactInterest(name));
+      { signal },
+    );
+
+    this.#environment.addEventListener(
+      'fact',
+      (event) => {
+        this.target.dispatchInterest(dashboardFactInterest(event.name));
       },
-      signal: this.signal,
+      { signal },
+    );
+
+    signal.addEventListener('abort', () => {
+      this.#environment.stop();
     });
   }
 
