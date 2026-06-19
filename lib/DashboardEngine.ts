@@ -15,8 +15,8 @@ export type DashboardStateReducerMap<
 > = { [type: string]: DashboardStateReducerConfig<Engine> };
 
 export type DashboardEngineInit = {
-  vars?: [name: string, value: DashboardVar][];
-  facts?: [name: string, value: DashboardFact][];
+  vars?: readonly [name: string, value: DashboardVar][];
+  facts?: readonly [name: string, value: DashboardFact][];
 };
 
 export class DashboardEngine extends StateEngine<
