@@ -11,8 +11,8 @@ import type { DashboardFact } from './DashboardFact';
 import type { DashboardVar } from './DashboardVar';
 
 export type DashboardEnvironmentInit = {
-  vars?: { [name: string]: DashboardVar };
-  facts?: { [name: string]: DashboardFact };
+  vars?: [name: string, value: DashboardVar][];
+  facts?: [name: string, value: DashboardFact][];
 };
 
 export class DashboardEnvironment extends TypedEventTarget<{
@@ -32,16 +32,10 @@ export class DashboardEnvironment extends TypedEventTarget<{
 
     this.#target = target;
     this.#vars = Object.fromEntries(
-      Object.entries(init?.vars ?? {}).map(([name, value]) => [
-        name,
-        Object.freeze(value),
-      ]),
+      init?.vars?.map(([name, value]) => [name, Object.freeze(value)]) ?? [],
     );
     this.#facts = Object.fromEntries(
-      Object.entries(init?.facts ?? {}).map(([name, value]) => [
-        name,
-        Object.freeze(value),
-      ]),
+      init?.facts?.map(([name, value]) => [name, Object.freeze(value)]) ?? [],
     );
 
     const signal = this.signal;
