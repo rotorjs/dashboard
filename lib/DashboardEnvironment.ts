@@ -11,8 +11,8 @@ import type { DashboardFact } from './DashboardFact';
 import type { DashboardVar } from './DashboardVar';
 
 export type DashboardEnvironmentInit = {
-  vars?: [name: string, value: DashboardVar][];
-  facts?: [name: string, value: DashboardFact][];
+  vars?: readonly [name: string, value: DashboardVar][];
+  facts?: readonly [name: string, value: DashboardFact][];
 };
 
 export class DashboardEnvironment extends TypedEventTarget<{
