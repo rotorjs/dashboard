@@ -15,8 +15,8 @@ export type DashboardStateReducerMap<
 > = { [type: string]: DashboardStateReducerConfig<Engine> };
 
 export type DashboardEngineInit = {
-  vars?: { [name: string]: DashboardVar };
-  facts?: { [name: string]: DashboardFact };
+  vars?: [name: string, value: DashboardVar][];
+  facts?: [name: string, value: DashboardFact][];
 };
 
 export class DashboardEngine extends StateEngine<
@@ -62,6 +62,14 @@ export class DashboardEngine extends StateEngine<
     signal.addEventListener('abort', () => {
       this.#environment.stop();
     });
+  }
+
+  get vars(): readonly [name: string, value: DashboardVar][] {
+    return this.#environment.vars;
+  }
+
+  get facts(): readonly [name: string, value: DashboardFact][] {
+    return this.#environment.facts;
   }
 
   hasVar(name: string): boolean {
