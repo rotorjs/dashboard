@@ -22,7 +22,9 @@ export class DashboardEnvironment extends TypedEventTarget<{
   #target;
   #id = uuid();
   #vars: { [name: string]: DashboardVar };
+  #varSnapshot?: readonly [name: string, value: DashboardVar][];
   #facts: { [name: string]: DashboardFact };
+  #factSnapshot?: readonly [name: string, value: DashboardFact][];
   #controller = new AbortController();
 
   constructor(target: DashboardEventTarget, init?: DashboardEnvironmentInit) {
@@ -64,6 +66,7 @@ export class DashboardEnvironment extends TypedEventTarget<{
             });
             if (!deepEquals(prevValue, nextValue)) {
               this.#vars[action.name] = nextValue;
+              this.#varSnapshot = undefined;
               this.dispatchEvent(
                 new VarEvent(action.name, nextValue.value, nextValue.exposed),
               );
@@ -76,13 +79,14 @@ export class DashboardEnvironment extends TypedEventTarget<{
             const nextValue = Object.freeze({ value: action.value });
             if (!deepEquals(prevValue, nextValue)) {
               this.#facts[action.name] = nextValue;
+              this.#factSnapshot = undefined;
               this.dispatchEvent(new FactEvent(action.name, nextValue.value));
             }
             return;
           }
 
           case 'sync':
-            Object.entries(this.#vars).forEach(([name, { value, exposed }]) => {
+            this.vars.forEach(([name, { value, exposed }]) => {
               const e = new ActionEvent({
                 type: 'var',
                 name,
@@ -93,7 +97,7 @@ export class DashboardEnvironment extends TypedEventTarget<{
               this.target.dispatchEvent(e);
             });
 
-            Object.entries(this.#facts).forEach(([name, { value }]) => {
+            this.facts.forEach(([name, { value }]) => {
               const e = new ActionEvent({
                 type: 'fact',
                 name,
@@ -122,6 +126,20 @@ export class DashboardEnvironment extends TypedEventTarget<{
     return this.#controller.signal;
   }
 
+  get vars(): readonly [name: string, value: DashboardVar][] {
+    if (!this.#varSnapshot) {
+      this.#varSnapshot = Object.freeze(Object.entries(this.#vars));
+    }
+    return this.#varSnapshot;
+  }
+
+  get facts(): readonly [name: string, value: DashboardFact][] {
+    if (!this.#factSnapshot) {
+      this.#factSnapshot = Object.freeze(Object.entries(this.#facts));
+    }
+    return this.#factSnapshot;
+  }
+
   hasVar(name: string): boolean {
     return Object.hasOwn(this.#vars, name);
   }
@@ -130,20 +148,12 @@ export class DashboardEnvironment extends TypedEventTarget<{
     return this.#vars[name];
   }
 
-  getVars(): [name: string, value: DashboardVar][] {
-    return Object.entries(this.#vars);
-  }
-
   hasFact(name: string): boolean {
     return Object.hasOwn(this.#facts, name);
   }
 
   getFact(name: string): DashboardFact | undefined {
     return this.#facts[name];
-  }
-
-  getFacts(): [name: string, value: DashboardFact][] {
-    return Object.entries(this.#facts);
   }
 
   stop(): void {
