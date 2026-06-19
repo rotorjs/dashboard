@@ -54,12 +54,12 @@ export class DashboardEnvironment extends TypedEventTarget<{
         switch (action.type) {
           case 'var': {
             const prevValue = this.#vars[action.name];
-            const nextValue = Object.freeze({
+            const nextValue = {
               value: action.value,
               exposed: action.exposed ?? false,
-            });
+            };
             if (!deepEquals(prevValue, nextValue)) {
-              this.#vars[action.name] = nextValue;
+              this.#vars[action.name] = Object.freeze(nextValue);
               this.#varSnapshot = undefined;
               this.dispatchEvent(
                 new VarEvent(action.name, nextValue.value, nextValue.exposed),
@@ -70,9 +70,9 @@ export class DashboardEnvironment extends TypedEventTarget<{
 
           case 'fact': {
             const prevValue = this.#facts[action.name];
-            const nextValue = Object.freeze({ value: action.value });
+            const nextValue = { value: action.value };
             if (!deepEquals(prevValue, nextValue)) {
-              this.#facts[action.name] = nextValue;
+              this.#facts[action.name] = Object.freeze(nextValue);
               this.#factSnapshot = undefined;
               this.dispatchEvent(new FactEvent(action.name, nextValue.value));
             }

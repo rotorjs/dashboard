@@ -1,5 +1,5 @@
-import { DashboardEventTarget } from '@/DashboardEventTarget';
 import { attachWorker } from '@rotorjs/state';
+import { DashboardEventTarget } from '../lib/DashboardEventTarget';
 import { ExtendedDemoDashboardEngine } from './DemoDashboardEngine';
 
 const controller = new AbortController();
