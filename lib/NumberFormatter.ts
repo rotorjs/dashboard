@@ -26,6 +26,12 @@ export class NumberFormatter {
     this.#init = init ?? {};
   }
 
+  removeInterests(): void {
+    this.#init?.reducer?.removeInterest(
+      dashboardFactInterest(dashboardLocaleFact),
+    );
+  }
+
   getLocale(format?: NumberFormat): string | undefined {
     if (format?.locale) return format.locale;
 
